@@ -13,45 +13,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Automatically detect if it's morning or evening based on local time
+    final int currentHour = DateTime.now().hour;
+    final String timeOfDayText = (currentHour < 12) ? 'Morning' : 'Evening';
+
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A), // Dark background
       body: SafeArea(
         child: Column(
           children: [
-            // Header with Home button and Settings icon
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'Home',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => context.push('/settings'),
-                    icon: const Icon(
-                      Icons.settings,
-                      color: Color(0xFF888888),
-                      size: 24,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // VoiceLoop Title and Subtitle
+            // VoiceLoop Title
+            const SizedBox(height: 40), // Increased space at the top
             const Text(
               'VoiceLoop',
               style: TextStyle(
@@ -60,15 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Tap to start recording',
-              style: TextStyle(
-                color: Color(0xFF888888),
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 20), // Adjusted space after title
 
             // Main content area
             Expanded(
@@ -87,38 +51,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Card Header
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Today\'s Journey',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.share_outlined,
-                                    color: Color(0xFF888888),
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'Share',
-                                    style: TextStyle(
-                                      color: Color(0xFF888888),
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          // Card Header with Time of Day text
+                          Text(
+                            'Today\'s Journey - $timeOfDayText',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 20), // Adjusted space between title and tasks
 
                           // Task List
                           _buildTaskItem('🎯', 'Complete project presentation'),
@@ -126,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           _buildTaskItem('📚', 'Read 20 pages'),
                           _buildTaskItem('🍎', 'Eat healthy lunch'),
 
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 30), // Adjusted space before card footer
 
                           // Card Footer
                           Container(
@@ -168,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 30), // Adjusted space between card and button
 
                     // Action Buttons
                     Row(
@@ -185,7 +127,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: ElevatedButton(
-                              onPressed: () => context.push('/morning'),
+                              onPressed: () {
+                                // Placeholder for recording logic, for now
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
                                 shadowColor: Colors.transparent,
@@ -196,49 +140,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.wb_sunny, color: Colors.white, size: 24),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Morning Brief',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                  Icon(
+                                    Icons.mic, // Placeholder icon for recording
+                                    color: Colors.white,
+                                    size: 24,
                                   ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-                        Expanded(
-                          child: Container(
-                            height: 80,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF3F51B5), Color(0xFF2196F3)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: ElevatedButton(
-                              onPressed: () => context.push('/evening'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                              child: const Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.nightlight_round, color: Colors.white, size: 24),
                                   SizedBox(height: 8),
                                   Text(
-                                    'Evening Debrief',
+                                    'Record Journey', // Placeholder text
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -252,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 40), // Adjusted space below button
                   ],
                 ),
               ),
@@ -296,7 +205,6 @@ class _HomeScreenState extends State<HomeScreen> {
             });
             switch (index) {
               case 0:
-              // Already on Home
                 break;
               case 1:
                 context.push('/history');
