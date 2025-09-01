@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A), // Dark background
       appBar: AppBar(
-        title: const Text(
-          'History',
-          style: TextStyle(
+        title: Text(
+          l10n.historyTitle,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -79,10 +82,7 @@ class HistoryScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             summary,
-            style: const TextStyle(
-              color: Color(0xFFCCCCCC),
-              fontSize: 14,
-            ),
+            style: const TextStyle(color: Color(0xFFCCCCCC), fontSize: 14),
           ),
         ],
       ),

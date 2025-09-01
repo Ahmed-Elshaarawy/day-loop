@@ -1,0 +1,22 @@
+{
+    "@@locale": "ar",
+    "appTitle": "داي لوب",
+    "homeTitle": "الرئيسية",
+    "settingsTitle": "الإعدادات",
+    "languageTitle": "اللغة",
+    "languageSubtitle": "العربية / الإنجليزية",
+    "generalSectionTitle": "عام",
+    "accountSectionTitle": "الحساب",
+    "logoutButton": "تسجيل الخروج",
+    "welcomeBack": "أهلاً بك مرة أخرى",
+    "createAccount": "أنشئ حسابك",
+    "signInLink": "هل لديك حساب بالفعل؟ تسجيل الدخول",
+    "recordJourneyButton": "سجل رحلتك",
+    "stopRecordingButton": "إيقاف التسجيل",
+    "todayJourney": "رحلة اليوم",
+    "todayDate": "اليوم • 29/8/2025",
+    "dayStreak": "7 أيام متتالية",
+    "morning": "الصباح",
+    "evening": "المساء",
+    "historyTitle": "السجل"
+}
