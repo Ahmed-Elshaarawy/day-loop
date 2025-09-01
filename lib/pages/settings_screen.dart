@@ -1,60 +1,106 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:day_loop/language_service.dart';
 
-class SettingsScreen extends StatelessWidget {
+import '../l10n/app_localizations.dart';
+
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A), // Dark background
+      backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
-        title: const Text(
-          'Settings',
-          style: TextStyle(
+        title: Text(
+          l10n.settingsTitle,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.transparent, // Transparent AppBar
-        elevation: 0, // No shadow
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // General Settings Section
             _buildSettingsSection(
               context,
-              title: 'General',
+              title: l10n.generalSectionTitle,
               items: [
-                _buildSettingsItem(
-                  icon: Icons.language,
-                  title: 'Language',
-                  subtitle: 'Arabic / English',
-                ),
+                _buildLanguageSettingsItem(context),
               ],
             ),
             const SizedBox(height: 20),
-            // Account Section
             _buildSettingsSection(
               context,
-              title: 'Account',
+              title: l10n.accountSectionTitle,
               items: [
                 _buildSettingsItem(
                   icon: Icons.logout,
-                  title: 'Log Out',
+                  title: l10n.logoutButton,
                   isDestructive: true,
-                  onTap: () {
-                    // TODO: Implement logout logic
-                  },
+                  onTap: () {},
                 ),
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLanguageSettingsItem(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final languageService = Provider.of<LanguageService>(context);
+    return _buildSettingsItem(
+      icon: Icons.language,
+      title: l10n.languageTitle,
+      subtitle: l10n.languageSubtitle,
+      onTap: () {
+        _showLanguageDialog(context, languageService);
+      },
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context, LanguageService languageService) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2A2A2A),
+          title: const Text('Select Language', style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                title: const Text('English', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  languageService.setLanguage('English');
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                title: const Text('Arabic', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  languageService.setLanguage('Arabic');
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
