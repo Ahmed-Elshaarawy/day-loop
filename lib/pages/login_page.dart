@@ -7,14 +7,13 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A), // Dark background
+      backgroundColor: const Color(0xFF1A1A1A),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // VoiceLoop Title
               const Text(
                 'VoiceLoop',
                 style: TextStyle(
@@ -24,8 +23,6 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 40),
-
-              // Login Card
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -35,7 +32,7 @@ class LoginPage extends StatelessWidget {
                 child: Column(
                   children: [
                     const Text(
-                      'Welcome Back!',
+                      'Welcome back',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,
@@ -45,7 +42,7 @@ class LoginPage extends StatelessWidget {
                     const SizedBox(height: 24),
                     _buildTextField(
                       labelText: 'Email',
-                      icon: Icons.email,
+                      icon: Icons.alternate_email,
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
@@ -67,8 +64,7 @@ class LoginPage extends StatelessWidget {
                       ),
                       child: ElevatedButton(
                         onPressed: () {
-                          // TODO: validate, call API, store auth token
-                          context.go('/home'); // replace stack (like popUpTo inclusive)
+                          context.go('/home');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
@@ -93,8 +89,107 @@ class LoginPage extends StatelessWidget {
                       child: const Text(
                         "Don't have an account? Sign up",
                         style: TextStyle(
-                          color: Color(0xFF4CAF50), // Green accent for links
+                          color: Color(0xFF4CAF50),
                           fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Divider(
+                            color: Color(0xFF333333),
+                            thickness: 1,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'or',
+                            style: TextStyle(
+                              color: Color(0xFF888888),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const Expanded(
+                          child: Divider(
+                            color: Color(0xFF333333),
+                            thickness: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // Google Button with left-aligned icon
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // TODO: Implement Google login logic
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start, // Align to the left
+                          children: [
+                            Image.network(
+                              'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png',
+                              height: 24,
+                              width: 24,
+                            ),
+                            const SizedBox(width: 22), // Add space between icon and text
+                            const Text(
+                              'Continue with Google',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Facebook Button with left-aligned icon
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // TODO: Implement Facebook login logic
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1877F2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start, // Align to the left
+                          children: [
+                            const Icon(
+                              Icons.facebook,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            const SizedBox(width: 20), // Add space between icon and text
+                            const Text(
+                              'Continue with Facebook',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -126,7 +221,7 @@ class LoginPage extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFFF5722)), // Orange accent on focus
+          borderSide: const BorderSide(color: Color(0xFFFF5722)),
         ),
         filled: true,
         fillColor: const Color(0xFF1F1F1F),
