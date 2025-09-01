@@ -16,7 +16,7 @@ class SignUpPage extends StatelessWidget {
             children: [
               // VoiceLoop Title
               const Text(
-                'VoiceLoop',
+                'DayLoop',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 32,

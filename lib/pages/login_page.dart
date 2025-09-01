@@ -15,7 +15,7 @@ class LoginPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'VoiceLoop',
+                'DayLoop',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 32,
