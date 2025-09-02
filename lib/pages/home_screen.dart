@@ -1,7 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_to_text.dart';
-import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:day_loop/language_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import '../l10n/app_localizations.dart';
 
@@ -12,60 +18,116 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final SpeechToText _speechToText = SpeechToText();
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  final SpeechToText _speech = SpeechToText();
+
+  bool _speechReady = false;
   String _lastWords = '';
+
+  // Animation variables
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
     _initSpeech();
+
+    // Initialize the animation controller and tween
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _animation = Tween<double>(
+      begin: 1.0,
+      end: 1.2,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
   }
 
-  void _initSpeech() async {
-    setState(() {});
+  @override
+  void dispose() {
+    _speech.stop();
+    _speech.cancel();
+    _controller.dispose(); // Dispose the controller
+    super.dispose();
   }
 
-  void _startListening() async {
-    final languageService = Provider.of<LanguageService>(context, listen: false);
-    final String currentAppLanguage = languageService.currentLanguage;
-    final String localeId = _getLocaleIdForLanguage(currentAppLanguage);
+  Future<void> _initSpeech() async {
+    _speechReady = await _speech.initialize(onStatus: _onStatus);
+    if (mounted) setState(() {});
+  }
 
-    await _speechToText.listen(
+  void _onStatus(String status) {
+    debugPrint('Speech status: $status');
+  }
+
+  Future<void> _startListening() async {
+    setState(() => _lastWords = '');
+
+    final langSvc = context.read<LanguageService>();
+    final localeId = _localeFor(langSvc.currentLanguage);
+
+    await _speech.listen(
       onResult: _onSpeechResult,
       localeId: localeId,
+      listenMode: ListenMode.dictation,
+      partialResults: true,
     );
-    setState(() {});
+
+    if (mounted) {
+      setState(() {});
+      _controller.repeat(reverse: true); // Start the pulsing animation
+    }
   }
 
-  void _stopListening() async {
-    await _speechToText.stop();
-    setState(() {});
+  Future<void> _stopListening() async {
+    await _speech.stop();
+    if (mounted) {
+      setState(() {});
+      _controller.stop(); // Stop the pulsing animation
+    }
   }
 
-  void _onSpeechResult(result) {
-    setState(() {
-      _lastWords = result.recognizedWords;
-    });
-    print("Recognized Text: $_lastWords");
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    setState(() => _lastWords = result.recognizedWords);
+    debugPrint('Recognized: $_lastWords');
+
+    if (result.finalResult && _lastWords.isNotEmpty) {
+      _saveToJsonFile(_lastWords);
+    }
   }
 
-  String _getLocaleIdForLanguage(String language) {
+  String _localeFor(String language) {
     switch (language.toLowerCase()) {
       case 'arabic':
         return 'ar-SA';
       case 'english':
-        return 'en-US';
       default:
         return 'en-US';
     }
   }
 
+  Future<void> _saveToJsonFile(String text) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/journey.json');
+
+    final payload = <String, dynamic>{
+      'timestamp': DateTime.now().toIso8601String(),
+      'text': text,
+    };
+
+    await file.writeAsString(jsonEncode(payload));
+    debugPrint('Saved to: ${file.path}');
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final int currentHour = DateTime.now().hour;
-    final String timeOfDayText = (currentHour < 12) ? l10n.morning : l10n.evening;
+    final timeOfDayText = (DateTime.now().hour < 12)
+        ? l10n.morning
+        : l10n.evening;
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
@@ -84,70 +146,13 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 20),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2A2A2A),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${l10n.todayJourney} - $timeOfDayText',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          _buildTaskItem('📝', 'Complete project presentation'),
-                          _buildTaskItem('🏋️', '30-minute workout'),
-                          _buildTaskItem('📖', 'Read 20 pages'),
-                          _buildTaskItem('🥗', 'Eat healthy lunch'),
-                          const SizedBox(height: 30),
-                          Container(
-                            padding: const EdgeInsets.only(top: 20),
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                top: BorderSide(color: Color(0xFF333333), width: 1),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  l10n.todayDate,
-                                  style: const TextStyle(
-                                    color: Color(0xFF888888),
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFF5722),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    l10n.dayStreak,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                    _JourneyCard(
+                      title: '${l10n.todayJourney} - $timeOfDayText',
+                      todayDateLabel: l10n.todayDate,
+                      dayStreakLabel: l10n.dayStreak,
                     ),
                     const SizedBox(height: 30),
                     Row(
@@ -163,34 +168,86 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: ElevatedButton(
-                              onPressed: _speechToText.isNotListening ? _startListening : _stopListening,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    _speechToText.isListening ? Icons.mic_off : Icons.mic,
-                                    color: Colors.white,
-                                    size: 24,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _speechToText.isListening ? l10n.stopRecordingButton : l10n.recordJourneyButton,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                            child: AnimatedBuilder(
+                              animation: _animation,
+                              builder: (context, child) {
+                                return ElevatedButton(
+                                  onPressed: !_speechReady
+                                      ? null
+                                      : (_speech.isNotListening
+                                            ? _startListening
+                                            : _stopListening),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
                                     ),
                                   ),
-                                ],
-                              ),
+                                  child: AnimatedBuilder(
+                                    animation: _animation,
+                                    builder: (context, child) {
+                                      return Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          // This ensures the icon and text are not pushed out
+                                          SizedBox(
+                                            width: 80,
+                                            // A fixed size to prevent overflow
+                                            height: 40,
+                                            child: Stack(
+                                              alignment: Alignment.center,
+                                              children: [
+                                                if (_speech.isListening)
+                                                  Container(
+                                                    width:
+                                                        24 * 3 +
+                                                        (24 *
+                                                            _animation.value *
+                                                            2),
+                                                    height:
+                                                        24 * 3 +
+                                                        (24 *
+                                                            _animation.value *
+                                                            2),
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: Colors.white
+                                                          .withOpacity(
+                                                            0.1 +
+                                                                (_animation.value -
+                                                                        1.0) *
+                                                                    0.5,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                Icon(
+                                                  _speech.isListening
+                                                      ? Icons.mic_off
+                                                      : Icons.mic,
+                                                  color: Colors.white,
+                                                  size: 24,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Text(
+                                            _speech.isListening
+                                                ? l10n.stopRecordingButton
+                                                : l10n.recordJourneyButton,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -199,9 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 40),
                     Text(
                       _lastWords,
-                      style: const TextStyle(
-                        color: Colors.white,
-                      ),
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ],
                 ),
@@ -212,23 +267,106 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 
-  Widget _buildTaskItem(String emoji, String text) {
+class _JourneyCard extends StatelessWidget {
+  const _JourneyCard({
+    required this.title,
+    required this.todayDateLabel,
+    required this.dayStreakLabel,
+  });
+
+  final String title;
+  final String todayDateLabel;
+  final String dayStreakLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A2A),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 20),
+          const _TaskItem('📝', 'Complete project presentation'),
+          const _TaskItem('🏋️', '30-minute workout'),
+          const _TaskItem('📖', 'Read 20 pages'),
+          const _TaskItem('🥗', 'Eat healthy lunch'),
+          const SizedBox(height: 30),
+          Container(
+            padding: const EdgeInsets.only(top: 20),
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: Color(0xFF333333), width: 1),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  todayDateLabel,
+                  style: const TextStyle(
+                    color: Color(0xFF888888),
+                    fontSize: 14,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF5722),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    dayStreakLabel,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TaskItem extends StatelessWidget {
+  const _TaskItem(this.emoji, this.text);
+
+  final String emoji;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 20),
-          ),
+          Text(emoji, style: const TextStyle(fontSize: 20)),
           const SizedBox(width: 12),
           Text(
             text,
-            style: const TextStyle(
-              color: Color(0xFFCCCCCC),
-              fontSize: 16,
-            ),
+            style: const TextStyle(color: Color(0xFFCCCCCC), fontSize: 16),
           ),
         ],
       ),
