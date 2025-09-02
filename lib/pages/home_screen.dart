@@ -1,10 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:day_loop/language_service.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -64,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _startListening() async {
-    setState(() => _lastWords = '');
+    _lastWords = '';
 
     final langSvc = context.read<LanguageService>();
     final localeId = _localeFor(langSvc.currentLanguage);
@@ -91,12 +86,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {
-    setState(() => _lastWords = result.recognizedWords);
+    _lastWords = result.recognizedWords;
     debugPrint('Recognized: $_lastWords');
-
-    if (result.finalResult && _lastWords.isNotEmpty) {
-      _saveToJsonFile(_lastWords);
-    }
   }
 
   String _localeFor(String language) {
@@ -107,19 +98,6 @@ class _HomeScreenState extends State<HomeScreen>
       default:
         return 'en-US';
     }
-  }
-
-  Future<void> _saveToJsonFile(String text) async {
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File('${dir.path}/journey.json');
-
-    final payload = <String, dynamic>{
-      'timestamp': DateTime.now().toIso8601String(),
-      'text': text,
-    };
-
-    await file.writeAsString(jsonEncode(payload));
-    debugPrint('Saved to: ${file.path}');
   }
 
   @override
@@ -175,8 +153,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   onPressed: !_speechReady
                                       ? null
                                       : (_speech.isNotListening
-                                            ? _startListening
-                                            : _stopListening),
+                                      ? _startListening
+                                      : _stopListening),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
@@ -189,12 +167,10 @@ class _HomeScreenState extends State<HomeScreen>
                                     builder: (context, child) {
                                       return Column(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        MainAxisAlignment.center,
                                         children: [
-                                          // This ensures the icon and text are not pushed out
                                           SizedBox(
                                             width: 80,
-                                            // A fixed size to prevent overflow
                                             height: 40,
                                             child: Stack(
                                               alignment: Alignment.center,
@@ -202,12 +178,12 @@ class _HomeScreenState extends State<HomeScreen>
                                                 if (_speech.isListening)
                                                   Container(
                                                     width:
-                                                        24 * 3 +
+                                                    24 * 3 +
                                                         (24 *
                                                             _animation.value *
                                                             2),
                                                     height:
-                                                        24 * 3 +
+                                                    24 * 3 +
                                                         (24 *
                                                             _animation.value *
                                                             2),
@@ -215,11 +191,11 @@ class _HomeScreenState extends State<HomeScreen>
                                                       shape: BoxShape.circle,
                                                       color: Colors.white
                                                           .withOpacity(
-                                                            0.1 +
-                                                                (_animation.value -
-                                                                        1.0) *
-                                                                    0.5,
-                                                          ),
+                                                        0.1 +
+                                                            (_animation.value -
+                                                                1.0) *
+                                                                0.5,
+                                                      ),
                                                     ),
                                                   ),
                                                 Icon(
@@ -252,11 +228,6 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 40),
-                    Text(
-                      _lastWords,
-                      style: const TextStyle(color: Colors.white),
                     ),
                   ],
                 ),
