@@ -3,13 +3,23 @@ import 'package:provider/provider.dart';
 import 'app_router.dart';
 import 'l10n/app_localizations.dart';
 import 'language_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() => runApp(
-  ChangeNotifierProvider(
-    create: (context) => LanguageService(),
-    child: const DayLoopApp(),
-  ),
-);
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => LanguageService(),
+      child: const DayLoopApp(),
+    ),
+  );
+}
 
 class DayLoopApp extends StatelessWidget {
   const DayLoopApp({super.key});

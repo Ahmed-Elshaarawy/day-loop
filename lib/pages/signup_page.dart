@@ -1,8 +1,21 @@
+import 'package:day_loop/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class SignUpPage extends StatelessWidget {
+class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
+
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  String name = '';
+  String email = '';
+  String password = '';
+  bool _loading = false;
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +27,6 @@ class SignUpPage extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // VoiceLoop Title
               const Text(
                 'DayLoop',
                 style: TextStyle(
@@ -25,7 +37,6 @@ class SignUpPage extends StatelessWidget {
               ),
               const SizedBox(height: 40),
 
-              // Sign Up Card
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -43,33 +54,86 @@ class SignUpPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _buildTextField(labelText: 'Name', icon: Icons.person),
+
+                    _buildTextField(
+                      labelText: 'Name',
+                      icon: Icons.person,
+                      onChanged: (v) => name = v.trim(),
+                    ),
                     const SizedBox(height: 16),
-                    _buildTextField(labelText: 'Email', icon: Icons.email),
+
+                    _buildTextField(
+                      labelText: 'Email',
+                      icon: Icons.email,
+                      keyboardType: TextInputType.emailAddress,
+                      onChanged: (v) => email = v.trim(),
+                    ),
                     const SizedBox(height: 16),
+
                     _buildTextField(
                       labelText: 'Password',
                       icon: Icons.lock,
                       obscureText: true,
+                      onChanged: (v) => password = v,
                     ),
                     const SizedBox(height: 24),
+
+                    // Sign Up button (gradient container + transparent ElevatedButton)
                     Container(
                       width: double.infinity,
                       height: 50,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-                          // Green gradient for signup
+                          colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)], // Green gradient
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: create account, log in, save token
-                          context.go('/home');
+                        onPressed: _loading
+                            ? null
+                            : () async {
+                          if (email.trim().isEmpty || password.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter email and password')),
+                            );
+                            return;
+                          }
+
+                          setState(() => _loading = true);
+                          try {
+                            final cred = await AuthService.instance.signUpWithEmail(
+                              email: email,
+                              password: password,
+                              // displayName: name, // if you capture it
+                              // sendVerificationEmail: true, // optional
+                            );
+
+                            if (!context.mounted) return;
+
+                            if (cred.user != null) {
+                              context.go('/home');
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Sign-up failed.')),
+                              );
+                            }
+                          } on AuthException catch (e) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(e.message)),
+                            );
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(e.toString())),
+                            );
+                          } finally {
+                            if (mounted) setState(() => _loading = false);
+                          }
                         },
+
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
@@ -77,7 +141,13 @@ class SignUpPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
+                        child: _loading
+                            ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                            : const Text(
                           'Create Account',
                           style: TextStyle(
                             color: Colors.white,
@@ -88,6 +158,7 @@ class SignUpPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
+
                     TextButton(
                       onPressed: () => context.go('/login'),
                       child: const Text(
@@ -108,13 +179,18 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
+  // Reusable field (no controllers; uses onChanged)
   Widget _buildTextField({
     required String labelText,
     required IconData icon,
     bool obscureText = false,
+    TextInputType? keyboardType,
+    ValueChanged<String>? onChanged,
   }) {
     return TextField(
+      onChanged: onChanged,
       obscureText: obscureText,
+      keyboardType: keyboardType,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: labelText,
@@ -124,11 +200,9 @@ class SignUpPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFF333333)),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: Color(0xFF4CAF50),
-          ), // Green accent on focus
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderSide: BorderSide(color: Color(0xFF4CAF50)),
         ),
         filled: true,
         fillColor: const Color(0xFF1F1F1F),

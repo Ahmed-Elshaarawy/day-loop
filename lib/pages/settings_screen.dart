@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:day_loop/language_service.dart';
 
@@ -50,7 +51,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.logout,
                   title: l10n.logoutButton,
                   isDestructive: true,
-                  onTap: () {},
+                  onTap: () {
+                    context.go('/login');
+                  },
                 ),
               ],
             ),

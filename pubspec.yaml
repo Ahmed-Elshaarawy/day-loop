@@ -19,6 +19,9 @@ dependencies:
   flutter_localization: ^0.3.3
   intl: ^0.20.2
   speech_to_text: ^7.3.0
+  firebase_core: ^4.1.0
+  firebase_auth: ^6.0.2
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_test:
