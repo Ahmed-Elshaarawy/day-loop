@@ -27,7 +27,24 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.6
 
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/splashscreen/day_loop.webp
+
+flutter_native_splash:
+  color: "#000000"
+  image: assets/splashscreen/day_loop.webp
+
+#  # Dark mode (optional)
+#  color_dark: "#000000"
+#  image_dark: assets/images/splash.png
+
+  # Android 12 requires its own block (uses a foreground-style image)
+  android_12:
+    color: "#000000"
+    image: assets/splashscreen/day_loop.webp
+    color_dark: "#000000"
