@@ -42,6 +42,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signInLink => 'هل لديك حساب بالفعل؟ تسجيل الدخول';
 
   @override
+  String get dontHaveAccount => 'لا تملك حساب؟ أنشئ حساب';
+
+  @override
   String get recordJourneyButton => 'سجل رحلتك';
 
   @override
@@ -64,4 +67,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get historyTitle => 'السجل';
+
+  @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get password => 'كلمة المرور';
+
+  @override
+  String get signIn => 'تسجيل الدخول';
+
+  @override
+  String get name => 'الاسم';
+
+  @override
+  String get signUp => 'إنشاء حساب';
+
+  @override
+  String get selectLanguage => 'اختر اللغة';
+
+  @override
+  String get languageEnglish => 'الإنجليزية';
+
+  @override
+  String get languageArabic => 'العربية';
+
+  @override
+  String get cancelButton => 'إلغاء';
 }

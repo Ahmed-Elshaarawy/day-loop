@@ -23,7 +23,7 @@ class MainShell extends StatelessWidget {
       body: SafeArea(child: child),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: const Color(0xFF2A2A2A),
-        selectedItemColor: const Color(0xFF4CAF50),
+        selectedItemColor: const Color(0xFFFF9800),
         unselectedItemColor: const Color(0xFF888888),
         selectedFontSize: 12,
         unselectedFontSize: 12,

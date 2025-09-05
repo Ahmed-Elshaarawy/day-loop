@@ -11,6 +11,7 @@
     "welcomeBack": "Welcome back",
     "createAccount": "Create Your Account",
     "signInLink": "Already have an account? Sign in",
+    "dontHaveAccount": "Don't have an account? Sign up",
     "recordJourneyButton": "Record Journey",
     "stopRecordingButton": "Stop Recording",
     "todayJourney": "Today's Journey",
@@ -18,5 +19,14 @@
     "dayStreak": "7 Day Streak",
     "morning": "Morning",
     "evening": "Evening",
-    "historyTitle": "History"
+    "historyTitle": "History",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "name": "Name",
+    "signUp": "Sign Up",
+    "selectLanguage": "Select Language",
+    "languageEnglish": "English",
+    "languageArabic": "Arabic",
+    "cancelButton": "Cancel"
 }
