@@ -1,4 +1,4 @@
-import 'package:day_loop/language_service.dart';
+import 'package:day_loop/services/language_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';

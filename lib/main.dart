@@ -1,22 +1,17 @@
+import 'package:day_loop/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:firebase_core/firebase_core.dart';
 
-import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
-import 'language_service.dart';
+import 'services/language_service.dart';
 
 // GoRouter configuration (provides AppRouter.router)
 import 'app_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
+  await FirebaseService.initializeFirebase();
   runApp(
     ChangeNotifierProvider<LanguageService>(
       create: (_) => LanguageService(),
