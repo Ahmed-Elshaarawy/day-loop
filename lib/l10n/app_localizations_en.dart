@@ -42,6 +42,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signInLink => 'Already have an account? Sign in';
 
   @override
+  String get dontHaveAccount => 'Don\'t have an account? Sign up';
+
+  @override
   String get recordJourneyButton => 'Record Journey';
 
   @override
@@ -64,4 +67,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyTitle => 'History';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get signUp => 'Sign Up';
+
+  @override
+  String get selectLanguage => 'Select Language';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageArabic => 'Arabic';
+
+  @override
+  String get cancelButton => 'Cancel';
 }
