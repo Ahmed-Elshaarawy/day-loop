@@ -28,5 +28,6 @@
     "selectLanguage": "Select Language",
     "languageEnglish": "English",
     "languageArabic": "Arabic",
-    "cancelButton": "Cancel"
+    "cancelButton": "Cancel",
+    "continueWithGoogle": "Continue with Google"
 }
