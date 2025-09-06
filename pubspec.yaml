@@ -33,18 +33,17 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
-    - assets/splashscreen/day_loop.webp
+    - assets/splashscreen/day_loop.png
 
 flutter_native_splash:
-  color: "#000000"
-  image: assets/splashscreen/day_loop.webp
+  color: "#000000" # Use a lighter color for better contrast with the logo
+  image: assets/splashscreen/day_loop.png
+  # Optional: Dark mode settings
+  color_dark: "#000000"
+  image_dark: assets/splashscreen/day_loop.png
 
-#  # Dark mode (optional)
-#  color_dark: "#000000"
-#  image_dark: assets/images/splash.png
-
-  # Android 12 requires its own block (uses a foreground-style image)
+  # Optional: Android 12-specific settings
   android_12:
     color: "#000000"
-    image: assets/splashscreen/day_loop.webp
+    image: assets/splashscreen/day_loop.png
     color_dark: "#000000"

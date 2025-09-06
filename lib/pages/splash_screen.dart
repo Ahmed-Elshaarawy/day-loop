@@ -10,7 +10,7 @@ class AppSplash extends StatelessWidget {
       backgroundColor: isDark ? Colors.black : Colors.white,
       body: Center(
         child: Image.asset(
-          isDark ? 'assets/splashscreen/day_loop.webp' : 'assets/splashscreen/day_loop.webp',
+          isDark ? 'assets/splashscreen/day_loop.png' : 'assets/splashscreen/day_loop.png',
           width: 180,
           fit: BoxFit.contain,
         ),

@@ -1,3 +1,4 @@
+import 'package:day_loop/pages/splash_screen.dart';
 import 'package:day_loop/services/auth_state_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -21,7 +22,7 @@ class AppRouter {
         path: '/splash',
         name: 'splash',
         builder: (context, state) =>
-            const Scaffold(body: Center(child: CircularProgressIndicator())),
+        const AppSplash(), // Use the custom AppSplash widget
       ),
       GoRoute(
         path: '/login',
