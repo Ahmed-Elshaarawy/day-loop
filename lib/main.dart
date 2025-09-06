@@ -1,17 +1,27 @@
 import 'package:day_loop/services/firebase_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' // ⬅️ for the debugPaint* flags
+    show
+    debugPaintSizeEnabled,
+    debugPaintBaselinesEnabled,
+    debugPaintPointersEnabled,
+    debugRepaintRainbowEnabled;
 import 'package:provider/provider.dart';
-
 
 import 'l10n/app_localizations.dart';
 import 'services/language_service.dart';
-
-// GoRouter configuration (provides AppRouter.router)
 import 'app_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseService.initializeFirebase();
+
+  // 🔧 HARD-OFF all debug paints/overlays (sometimes toggled in Inspector)
+  debugPaintSizeEnabled = false;
+  debugPaintBaselinesEnabled = false;
+  debugPaintPointersEnabled = false;
+  debugRepaintRainbowEnabled = false;
+
   runApp(
     ChangeNotifierProvider<LanguageService>(
       create: (_) => LanguageService(),
@@ -30,6 +40,13 @@ class DayLoopApp extends StatelessWidget {
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
+      // Explicitly keep ALL debug/overlay stuff OFF:
+      debugShowMaterialGrid: false,
+      showPerformanceOverlay: false,
+      checkerboardRasterCacheImages: false,
+      checkerboardOffscreenLayers: false,
+      showSemanticsDebugger: false,
+
       title: 'Day Loop',
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
