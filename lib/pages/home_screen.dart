@@ -143,8 +143,7 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
 
-    final mode =
-    DateTime.now().hour < 12 ? 'morning_brief' : 'evening_debrief';
+    final mode = DateTime.now().hour < 12 ? 'morning_brief' : 'evening_debrief';
     final langSvc = context.read<LanguageService>();
     final locale = _localeFor(langSvc.currentLanguage);
 
@@ -197,8 +196,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final timeOfDayText =
-    (DateTime.now().hour < 12) ? l10n.morning : l10n.evening;
+    final timeOfDayText = (DateTime.now().hour < 12) ? l10n.morning : l10n.evening;
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
@@ -259,8 +257,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     animation: _animation,
                                     builder: (context, child) {
                                       return Column(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           SizedBox(
                                             width: 80,
@@ -271,21 +268,13 @@ class _HomeScreenState extends State<HomeScreen>
                                                 if (_speech.isListening)
                                                   Container(
                                                     width: 24 * 3 +
-                                                        (24 *
-                                                            _animation.value *
-                                                            2),
+                                                        (24 * _animation.value * 2),
                                                     height: 24 * 3 +
-                                                        (24 *
-                                                            _animation.value *
-                                                            2),
+                                                        (24 * _animation.value * 2),
                                                     decoration: BoxDecoration(
                                                       shape: BoxShape.circle,
-                                                      color: Colors.white
-                                                          .withOpacity(
-                                                        0.1 +
-                                                            (_animation.value -
-                                                                1.0) *
-                                                                0.5,
+                                                      color: Colors.white.withOpacity(
+                                                        0.1 + (_animation.value - 1.0) * 0.5,
                                                       ),
                                                     ),
                                                   ),
@@ -366,7 +355,7 @@ class _JourneyCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // React to Gemini state; render only tasks.
+          // React to Gemini state; render full 'entries' (fallback to tasks).
           ValueListenableBuilder<bool>(
             valueListenable: j.loading,
             builder: (context, loading, _) {
@@ -394,7 +383,7 @@ class _JourneyCard extends StatelessWidget {
                           ],
                         );
                       }
-                      return _JsonSections(data); // tasks-only renderer
+                      return _EntriesSection(data);
                     },
                   );
                 },
@@ -471,15 +460,23 @@ class _TaskItem extends StatelessWidget {
   }
 }
 
-/// Tasks-only renderer for the strict JSON from Gemini.
-/// Reads d['tasks'] and shows each task row with compact metadata.
-/// If no tasks were extracted, shows a small placeholder.
-class _JsonSections extends StatelessWidget {
-  const _JsonSections(this.d);
+/// Entries renderer for the strict JSON from Gemini.
+/// Prefer 'entries' (records everything). If missing/empty, fall back to 'tasks'.
+class _EntriesSection extends StatelessWidget {
+  const _EntriesSection(this.d);
   final Map<String, dynamic> d;
 
   @override
   Widget build(BuildContext context) {
+    // Try entries first (records everything).
+    final List<Map<String, dynamic>> entries = (d['entries'] is List)
+        ? (d['entries'] as List)
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList()
+        : <Map<String, dynamic>>[];
+
+    // Fallback to tasks if no entries present.
     final List<Map<String, dynamic>> tasks = (d['tasks'] is List)
         ? (d['tasks'] as List)
         .whereType<Map>()
@@ -487,16 +484,28 @@ class _JsonSections extends StatelessWidget {
         .toList()
         : <Map<String, dynamic>>[];
 
-    if (tasks.isEmpty) {
+    if (entries.isEmpty && tasks.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 8),
         child: Text(
-          'No tasks found.',
+          'No entries yet.',
           style: TextStyle(color: Color(0xFFCCCCCC)),
         ),
       );
     }
 
+    if (entries.isNotEmpty) {
+      return ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: entries.length,
+        separatorBuilder: (_, __) =>
+        const Divider(color: Color(0xFF333333), height: 20),
+        itemBuilder: (_, i) => _entryTile(entries[i]),
+      );
+    }
+
+    // Fallback: render tasks like before.
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -507,10 +516,68 @@ class _JsonSections extends StatelessWidget {
     );
   }
 
+  static Widget _entryTile(Map<String, dynamic> e) {
+    final type = (e['type'] ?? 'note').toString();
+    final text = (e['text'] ?? '').toString();
+
+    // Build compact meta line
+    final date = (e['date_phrase'] ?? '').toString().trim();
+    final time = (e['time_phrase'] ?? '').toString().trim();
+    final people = ((e['entities']?['people']) is List)
+        ? (e['entities']['people'] as List).whereType<String>().toList()
+        : const <String>[];
+    final places = ((e['entities']?['places']) is List)
+        ? (e['entities']['places'] as List).whereType<String>().toList()
+        : const <String>[];
+    final amount = e['amount'];
+    final currency = (e['currency'] ?? '').toString().trim();
+
+    final parts = <String>[];
+    if (time.isNotEmpty) parts.add(time);
+    if (date.isNotEmpty) parts.add(date);
+    if (people.isNotEmpty) parts.add(people.join(', '));
+    if (places.isNotEmpty) parts.add(places.join(', '));
+    if (amount is num) {
+      parts.add('${currency.isNotEmpty ? '$currency ' : ''}${amount.toString()}');
+    }
+    final meta = parts.join('  ·  ');
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2, right: 8),
+          child: Text(
+            _iconFor(type),
+            style: const TextStyle(fontSize: 18),
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                text.isEmpty ? '—' : text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (meta.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(meta, style: const TextStyle(color: Color(0xFFAAAAAA))),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   static Widget _taskTile(Map<String, dynamic> t) {
     final text = (t['text'] ?? '').toString();
 
-    // Build compact meta line from any non-empty fields
     final parts = <String>[];
     void addPart(String key, [String label = '']) {
       final v = (t[key] ?? '').toString().trim();
@@ -539,9 +606,10 @@ class _JsonSections extends StatelessWidget {
               Text(
                 text.isEmpty ? '(Untitled task)' : text,
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600),
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               if (meta.isNotEmpty) ...[
                 const SizedBox(height: 4),
@@ -552,5 +620,39 @@ class _JsonSections extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  static String _iconFor(String type) {
+    switch (type) {
+      case 'call':
+        return '📞';
+      case 'shopping':
+        return '🛒';
+      case 'expense':
+        return '💸';
+      case 'outing':
+        return '📍';
+      case 'reminder':
+        return '⏰';
+      case 'plan':
+      case 'action':
+        return '✅';
+      case 'idea':
+        return '💡';
+      case 'question':
+        return '❓';
+      case 'gratitude':
+        return '🙏';
+      case 'habit':
+        return '🔁';
+      case 'memory':
+        return '🧠';
+      case 'follow_up':
+        return '🔁';
+      case 'note':
+      case 'fact':
+      default:
+        return '•';
+    }
   }
 }
