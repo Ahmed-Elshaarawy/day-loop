@@ -1,6 +1,8 @@
 import 'package:day_loop/services/firebase_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' // ⬅️ for the debugPaint* flags
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/rendering.dart'
+
     show
     debugPaintSizeEnabled,
     debugPaintBaselinesEnabled,
@@ -15,7 +17,7 @@ import 'app_router.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseService.initializeFirebase();
-
+  await dotenv.load(fileName: ".env");
   // 🔧 HARD-OFF all debug paints/overlays (sometimes toggled in Inspector)
   debugPaintSizeEnabled = false;
   debugPaintBaselinesEnabled = false;

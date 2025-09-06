@@ -1,10 +1,10 @@
 import 'package:day_loop/ai/day_loop_service.dart'; // Gemini service
-import 'package:day_loop/apikey.dart';               // const String apiKey = '...';
 import 'package:day_loop/services/language_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../l10n/app_localizations.dart';
 
@@ -125,6 +125,8 @@ class _HomeScreenState extends State<HomeScreen>
   /// PROCESS TRANSCRIPT:
   /// - send _lastWords to Gemini
   /// - publish results to JourneyState so the card updates
+  String apiKey = dotenv.env['API_KEY']!;
+
   Future<void> _processTranscript() async {
     if (_isProcessingTranscript) {
       debugPrint('DL> Already processing transcript, skipping...');
