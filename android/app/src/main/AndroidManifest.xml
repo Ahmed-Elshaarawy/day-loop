@@ -4,11 +4,12 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="day_loop"
+        android:label=""
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
+            android:label="Day Loop"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
