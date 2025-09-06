@@ -29,12 +29,14 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   flutter_native_splash: ^2.4.6
+  flutter_dotenv: ^6.0.0
 
 flutter:
   uses-material-design: true
   generate: true
   assets:
     - assets/splashscreen/day_loop.png
+    - .env
 
 flutter_native_splash:
   color: "#000000" # Use a lighter color for better contrast with the logo
