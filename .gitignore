@@ -9,7 +9,6 @@
 .buildlog/
 .history
 .svn/
-.env
 .swiftpm/
 migrate_working_dir/
 
@@ -48,4 +47,3 @@ app.*.map.json
 # Ignore API key file
 /lib/apikey.dart
 /lib/apikey.*
-.env
