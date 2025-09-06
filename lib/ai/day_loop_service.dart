@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DayLoopService {
+
   DayLoopService(this.apiKey)
       : _model = GenerativeModel(
     model: 'gemini-1.5-flash',
@@ -15,7 +17,7 @@ class DayLoopService {
     ),
   );
 
-  final String apiKey;
+  String apiKey = dotenv.env['API_KEY']!;
   final GenerativeModel _model;
 
   /// Sends the transcript + mode to Gemini and returns the parsed JSON Map.
