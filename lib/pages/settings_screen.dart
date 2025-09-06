@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:day_loop/language_service.dart';
-
+import '../Widgets/language_selection_dialog.dart';
+import '../auth/auth_service.dart';
 import '../l10n/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -37,9 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSettingsSection(
               context,
               title: l10n.generalSectionTitle,
-              items: [
-                _buildLanguageSettingsItem(context),
-              ],
+              items: [_buildLanguageSettingsItem(context)],
             ),
             const SizedBox(height: 20),
             _buildSettingsSection(
@@ -50,7 +47,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.logout,
                   title: l10n.logoutButton,
                   isDestructive: true,
-                  onTap: () {},
+                  onTap: () async {
+                    await AuthService.instance.signOut();
+                  },
                 ),
               ],
             ),
@@ -62,53 +61,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildLanguageSettingsItem(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final languageService = Provider.of<LanguageService>(context);
     return _buildSettingsItem(
       icon: Icons.language,
       title: l10n.languageTitle,
       subtitle: l10n.languageSubtitle,
       onTap: () {
-        _showLanguageDialog(context, languageService);
-      },
-    );
-  }
-
-  void _showLanguageDialog(BuildContext context, LanguageService languageService) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF2A2A2A),
-          title: const Text('Select Language', style: TextStyle(color: Colors.white)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                title: const Text('English', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  languageService.setLanguage('English');
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                title: const Text('Arabic', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  languageService.setLanguage('Arabic');
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const LanguageSelectionDialog();
+          },
         );
       },
     );
   }
 
   Widget _buildSettingsSection(
-      BuildContext context, {
-        required String title,
-        required List<Widget> items,
-      }) {
+    BuildContext context, {
+    required String title,
+    required List<Widget> items,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -166,20 +138,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       subtitle: subtitle != null
           ? Text(
-        subtitle,
-        style: const TextStyle(
-          color: Color(0xFF888888),
-          fontSize: 12,
-        ),
-      )
+              subtitle,
+              style: const TextStyle(color: Color(0xFF888888), fontSize: 12),
+            )
           : null,
       trailing: isDestructive
           ? null
           : const Icon(
-        Icons.arrow_forward_ios,
-        color: Color(0xFF888888),
-        size: 16,
-      ),
+              Icons.arrow_forward_ios,
+              color: Color(0xFF888888),
+              size: 16,
+            ),
     );
   }
 }

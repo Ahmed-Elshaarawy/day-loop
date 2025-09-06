@@ -19,12 +19,31 @@ dependencies:
   flutter_localization: ^0.3.3
   intl: ^0.20.2
   speech_to_text: ^7.3.0
+  firebase_core: ^4.1.0
+  firebase_auth: ^6.0.2
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.6
 
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/splashscreen/day_loop.png
+
+flutter_native_splash:
+  color: "#000000" # Use a lighter color for better contrast with the logo
+  image: assets/splashscreen/day_loop.png
+  # Optional: Dark mode settings
+  color_dark: "#000000"
+  image_dark: assets/splashscreen/day_loop.png
+
+  # Optional: Android 12-specific settings
+  android_12:
+    color: "#000000"
+    image: assets/splashscreen/day_loop.png
+    color_dark: "#000000"

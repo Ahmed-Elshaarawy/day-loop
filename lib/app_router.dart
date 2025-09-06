@@ -1,93 +1,100 @@
+import 'package:day_loop/pages/splash_screen.dart';
+import 'package:day_loop/services/auth_state_notifier.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'pages/login_page.dart';
 import 'pages/signup_page.dart';
-import 'pages/home_screen.dart';
-import 'pages/morning_screen.dart';
-import 'pages/evening_screen.dart';
-import 'pages/history_screen.dart';
-import 'pages/detail_screen.dart';
-import 'pages/settings_screen.dart';
 import 'main_shell.dart';
+import 'pages/home_screen.dart';
+import 'pages/history_screen.dart';
+import 'pages/settings_screen.dart';
 
-/// Single app-wide router. You can add guards later if you add real auth.
-final router = GoRouter(
-  initialLocation: '/login',
-  routes: [
-    // ---- Auth flow ----
-    GoRoute(
-      path: '/login',
-      name: 'login',
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: '/signup',
-      name: 'signup',
-      builder: (context, state) => const SignUpPage(),
-    ),
+class AppRouter {
+  static final _auth = AuthStateNotifier();
 
-    // ---- Main app with persistent navigation bar ----
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) {
-        // The builder is called when a branch is selected.
-        return MainShell(
-          navigationShell: navigationShell,
-          child: navigationShell,
-        );
-      },
-      branches: [
-        // Home Branch
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/home',
-              name: 'home',
-              builder: (context, state) => const HomeScreen(),
-              routes: [
-                GoRoute(
-                  path: 'morning',
-                  name: 'morning',
-                  builder: (context, state) => const MorningScreen(),
-                ),
-                GoRoute(
-                  path: 'evening',
-                  name: 'evening',
-                  builder: (context, state) => const EveningScreen(),
-                ),
-              ],
-            ),
-          ],
+  static final GoRouter router = GoRouter(
+    debugLogDiagnostics: true,
+    initialLocation: '/splash',
+    refreshListenable: _auth,
+    routes: <RouteBase>[
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) =>
+        const AppSplash(), // Use the custom AppSplash widget
+      ),
+      GoRoute(
+        path: '/login',
+        name: 'login',
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/signup',
+        name: 'signup',
+        builder: (context, state) => const SignUpPage(),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainShell(
+            navigationShell: navigationShell,
+            child: navigationShell,
+          );
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/history',
+                builder: (context, state) => const HistoryScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+    redirect: (context, state) {
+      if (!_auth.isReady) {
+        return state.matchedLocation == '/splash' ? null : '/splash';
+      }
+
+      final loggedIn = _auth.isLoggedIn;
+      final loc = state.matchedLocation;
+      final onSplash = loc == '/splash';
+      final onLogin = loc == '/login';
+      final onSignup = loc == '/signup';
+
+      if (!loggedIn) {
+        return (onLogin || onSignup) ? null : '/login';
+      }
+
+      if (onLogin || onSplash || onSignup) return '/home';
+
+      return null;
+    },
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Text(
+          'Routing error:\n${state.error}',
+          textAlign: TextAlign.center,
         ),
-
-        // History Branch
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/history',
-              name: 'history',
-              builder: (context, state) => const HistoryScreen(),
-            ),
-          ],
-        ),
-
-        // Settings Branch
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/settings',
-              name: 'settings',
-              builder: (context, state) => const SettingsScreen(),
-            ),
-          ],
-        ),
-      ],
+      ),
     ),
-
-    // Detail Screen (not part of the persistent bar)
-    GoRoute(
-      path: '/detail/:id',
-      name: 'detail',
-      builder: (context, state) => DetailScreen(id: state.pathParameters['id']!),
-    ),
-  ],
-);
+  );
+}

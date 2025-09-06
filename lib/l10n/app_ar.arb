@@ -11,6 +11,7 @@
     "welcomeBack": "أهلاً بك مرة أخرى",
     "createAccount": "أنشئ حسابك",
     "signInLink": "هل لديك حساب بالفعل؟ تسجيل الدخول",
+    "dontHaveAccount": "لا تملك حساب؟ أنشئ حساب",
     "recordJourneyButton": "سجل رحلتك",
     "stopRecordingButton": "إيقاف التسجيل",
     "todayJourney": "رحلة اليوم",
@@ -18,5 +19,15 @@
     "dayStreak": "7 أيام متتالية",
     "morning": "الصباح",
     "evening": "المساء",
-    "historyTitle": "السجل"
+    "historyTitle": "السجل",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "signIn": "تسجيل الدخول",
+    "name": "الاسم",
+    "signUp": "إنشاء حساب",
+    "selectLanguage": "اختر اللغة",
+    "languageEnglish": "الإنجليزية",
+    "languageArabic": "العربية",
+    "cancelButton": "إلغاء",
+    "continueWithGoogle": "المتابعة باستخدام جوجل"
 }
