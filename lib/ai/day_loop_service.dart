@@ -5,7 +5,6 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DayLoopService {
-
   DayLoopService(this.apiKey)
       : _model = GenerativeModel(
     model: 'gemini-1.5-flash',
@@ -67,8 +66,16 @@ class DayLoopService {
       }
 
       final decoded = _parseAndValidateJson(jsonStr);
-      return decoded;
 
+      // Safety net: ensure a top-level tasks array exists
+      if (decoded['tasks'] is! List) {
+        decoded['tasks'] = <Map<String, dynamic>>[];
+      }
+
+      // Optional: Light normalization of tasks structure (keep super-simple)
+      decoded['tasks'] = _normalizeTasks(decoded['tasks']);
+
+      return decoded;
     } on TimeoutException {
       throw StateError('Request timed out after ${timeout.inSeconds} seconds');
     } catch (e, st) {
@@ -91,7 +98,7 @@ class DayLoopService {
         throw FormatException('Expected JSON object, got ${decoded.runtimeType}');
       }
 
-      // Validate required fields exist
+      // Validate required fields exist (tasks is encouraged below, but not required here)
       final required = ['headline', 'what_was_said', 'mode', 'intent', 'confidence'];
       for (final field in required) {
         if (!decoded.containsKey(field)) {
@@ -111,6 +118,26 @@ class DayLoopService {
     } catch (e) {
       throw FormatException('Failed to parse JSON: $e\n$jsonStr');
     }
+  }
+
+  /// Normalizes the "tasks" array to a simple list of {text, completed, type}
+  List<Map<String, dynamic>> _normalizeTasks(dynamic tasksRaw) {
+    if (tasksRaw is! List) return const [];
+    final out = <Map<String, dynamic>>[];
+    for (final item in tasksRaw) {
+      if (item is Map) {
+        final text = (item['text'] ?? item['title'] ?? item['task'] ?? '').toString().trim();
+        if (text.isEmpty) continue;
+        final completed = (item['completed'] ?? false) == true;
+        final type = (item['type'] ?? '').toString();
+        out.add({'text': text, 'completed': completed, 'type': type});
+      } else if (item is String) {
+        final text = item.trim();
+        if (text.isEmpty) continue;
+        out.add({'text': text, 'completed': false, 'type': ''});
+      }
+    }
+    return out;
   }
 
   String _buildPrompt({
@@ -137,7 +164,7 @@ Output (STRICT JSON only; one object):
   // EVERYTHING goes here as a flat stream, preserving order.
   "entries": [
     {
-      "type": "action|call|expense|outing|reminder|note|fact|thought|question|idea|gratitude|habit|memory|follow_up|shopping",
+      "type": "action|call|expense|outing|reminder|note|fact|thought|question|idea|gratitude|habit|memory|follow_up|shopping|plan",
       "text": "Concise restatement of the user’s clause",
       "date_phrase": "",
       "time_phrase": "",
@@ -152,6 +179,15 @@ Output (STRICT JSON only; one object):
       "priority": "",           // low|med|high when implied
       "status": "",             // planned|done|said (do not infer completion unless stated)
       "source_phrases": ["Verbatim or near-verbatim snippet(s)"]
+    }
+  ],
+
+  // 👉 PRIMARY for our app:
+  "tasks": [
+    {
+      "text": "Concise actionable item",
+      "completed": false,             // true only if user explicitly said it's done
+      "type": "action|reminder|call|shopping|expense|follow_up|plan"
     }
   ],
 
@@ -184,10 +220,12 @@ Rules:
 1) Do NOT resolve or invent dates/times. Keep phrases exactly as spoken; if none, use "" for date/time fields.
 2) Do NOT infer MODE. Use "${mode}" exactly as provided.
 3) RECORD EVERYTHING said (actionable or not). Prefer more entries over fewer.
-4) Keep strings terse and scannable; "what_was_said" may use 1–2 sentences.
-5) No hallucinations. Missing key info → add a brief item in "unresolved".
-6) Return ONLY valid JSON (no markdown or commentary).
-7) Confidence 0–1 reflects certainty of extraction and categorization.
+4) Mirror actionable clauses into the top-level "tasks" array. If none are actionable, set "tasks": [].
+5) Do not invent completion; set "completed": true only if the user explicitly said it's done.
+6) Keep strings terse and scannable; "what_was_said" may use 1–2 sentences.
+7) No hallucinations. Missing key info → add a brief item in "unresolved".
+8) Return ONLY valid JSON (no markdown or commentary).
+9) Confidence 0–1 reflects certainty of extraction and categorization.
 
 TRANSCRIPT: "${transcript.replaceAll('"', '\\"')}"
 ''';
