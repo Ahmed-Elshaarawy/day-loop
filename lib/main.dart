@@ -2,7 +2,6 @@ import 'package:day_loop/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/rendering.dart'
-
     show
     debugPaintSizeEnabled,
     debugPaintBaselinesEnabled,
@@ -14,10 +13,13 @@ import 'l10n/app_localizations.dart';
 import 'services/language_service.dart';
 import 'app_router.dart';
 
+import 'repositories/task_repository.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseService.initializeFirebase();
   await dotenv.load(fileName: ".env");
+
   // 🔧 HARD-OFF all debug paints/overlays (sometimes toggled in Inspector)
   debugPaintSizeEnabled = false;
   debugPaintBaselinesEnabled = false;
@@ -25,8 +27,16 @@ Future<void> main() async {
   debugRepaintRainbowEnabled = false;
 
   runApp(
-    ChangeNotifierProvider<LanguageService>(
-      create: (_) => LanguageService(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<LanguageService>(
+          create: (_) => LanguageService(),
+        ),
+        // ⬅️ Important: use ChangeNotifierProvider so HistoryScreen rebuilds
+        ChangeNotifierProvider<TaskRepository>(
+          create: (_) => TaskRepository(),
+        ),
+      ],
       child: const DayLoopApp(),
     ),
   );

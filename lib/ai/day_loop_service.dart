@@ -6,15 +6,15 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DayLoopService {
   DayLoopService(this.apiKey)
-      : _model = GenerativeModel(
-    model: 'gemini-1.5-flash',
-    apiKey: apiKey,
-    generationConfig: GenerationConfig(
-      temperature: 0.2,
-      responseMimeType: 'application/json',
-      maxOutputTokens: 2048, // Prevent overly long responses
-    ),
-  );
+    : _model = GenerativeModel(
+        model: 'gemini-1.5-flash',
+        apiKey: apiKey,
+        generationConfig: GenerationConfig(
+          temperature: 0.2,
+          responseMimeType: 'application/json',
+          maxOutputTokens: 2048, // Prevent overly long responses
+        ),
+      );
 
   String apiKey = dotenv.env['API_KEY']!;
   final GenerativeModel _model;
@@ -29,24 +29,42 @@ class DayLoopService {
   }) async {
     // Guard bad mode early
     if (mode != 'morning_brief' && mode != 'evening_debrief') {
-      throw ArgumentError.value(mode, 'mode', 'Must be morning_brief or evening_debrief');
+      throw ArgumentError.value(
+        mode,
+        'mode',
+        'Must be morning_brief or evening_debrief',
+      );
     }
 
     // Guard empty transcript
     if (transcript.trim().isEmpty) {
-      throw ArgumentError.value(transcript, 'transcript', 'Transcript cannot be empty');
+      throw ArgumentError.value(
+        transcript,
+        'transcript',
+        'Transcript cannot be empty',
+      );
     }
 
-    final prompt = _buildPrompt(transcript: transcript, mode: mode, locale: locale);
+    final prompt = _buildPrompt(
+      transcript: transcript,
+      mode: mode,
+      locale: locale,
+    );
 
     try {
-      final resp = await _model.generateContent([Content.text(prompt)]).timeout(timeout);
-      debugPrint('DL> Got response from Gemini: ${resp.text?.substring(0, 100)}...');
+      final resp = await _model
+          .generateContent([Content.text(prompt)])
+          .timeout(timeout);
+      debugPrint(
+        'DL> Got response from Gemini: ${resp.text?.substring(0, 100)}...',
+      );
 
       // Check if content was blocked
       if (resp.promptFeedback != null && resp.candidates.isEmpty) {
         final fb = resp.promptFeedback!;
-        throw StateError('Gemini blocked the prompt: ${fb.blockReason} ${fb.safetyRatings}');
+        throw StateError(
+          'Gemini blocked the prompt: ${fb.blockReason} ${fb.safetyRatings}',
+        );
       }
 
       // Check if we got a response
@@ -95,11 +113,19 @@ class DayLoopService {
       final decoded = jsonDecode(jsonStr);
 
       if (decoded is! Map<String, dynamic>) {
-        throw FormatException('Expected JSON object, got ${decoded.runtimeType}');
+        throw FormatException(
+          'Expected JSON object, got ${decoded.runtimeType}',
+        );
       }
 
       // Validate required fields exist (tasks is encouraged below, but not required here)
-      final required = ['headline', 'what_was_said', 'mode', 'intent', 'confidence'];
+      final required = [
+        'headline',
+        'what_was_said',
+        'mode',
+        'intent',
+        'confidence',
+      ];
       for (final field in required) {
         if (!decoded.containsKey(field)) {
           throw FormatException('Missing required field: $field');
@@ -109,7 +135,9 @@ class DayLoopService {
       // Validate confidence is a number between 0-1
       final confidence = decoded['confidence'];
       if (confidence is! num || confidence < 0 || confidence > 1) {
-        throw FormatException('Invalid confidence value: $confidence (must be 0-1)');
+        throw FormatException(
+          'Invalid confidence value: $confidence (must be 0-1)',
+        );
       }
 
       return decoded;
@@ -130,11 +158,13 @@ class DayLoopService {
         if (text.isEmpty) continue;
         final completed = (item['completed'] ?? false) == true;
         final type = (item['type'] ?? '').toString();
-        out.add({'text': text, 'completed': completed, 'type': type});
+        // Get the emoji directly from the AI's response
+        final emoji = (item['emoji'] ?? '').toString().trim();
+        out.add({'text': text, 'completed': completed, 'type': type, 'emoji': emoji});
       } else if (item is String) {
         final text = item.trim();
         if (text.isEmpty) continue;
-        out.add({'text': text, 'completed': false, 'type': ''});
+        out.add({'text': text, 'completed': false, 'type': '', 'emoji': ''});
       }
     }
     return out;
@@ -147,7 +177,7 @@ class DayLoopService {
   }) =>
       '''
 Role:
-You are the intelligence behind Day Loop, where users speak freely and the app turns the transcript into structured data. The app decides MODE (morning_brief vs evening_debrief). Your job: parse the transcript and output JSON that records EVERYTHING the user says—actions, plans, purchases, calls, places, people, ideas, questions, reflections—without resolving dates/times.
+You are the intelligence behind Day Loop, where users speak freely and the app turns the transcript into structured data. The app decides MODE (morning_brief vs evening_debrief). Your job: parse the transcript and output JSON that records EVERYTHING the user says—actions, plans, purchases, calls, places, people, ideas, questions, reflections—without resolving dates/times. **The values of all output keys (e.g., "headline", "text") must be in the same language as the TRANSCRIPT.**
 
 Inputs provided by the app:
 - TRANSCRIPT: raw speech-to-text (may be long and rambly).
@@ -187,7 +217,8 @@ Output (STRICT JSON only; one object):
     {
       "text": "Concise actionable item",
       "completed": false,             // true only if user explicitly said it's done
-      "type": "action|reminder|call|shopping|expense|follow_up|plan"
+      "type": "action|reminder|call|shopping|expense|follow_up|plan",
+      "emoji": "A single emoji that best represents the task"
     }
   ],
 
@@ -226,6 +257,8 @@ Rules:
 7) No hallucinations. Missing key info → add a brief item in "unresolved".
 8) Return ONLY valid JSON (no markdown or commentary).
 9) Confidence 0–1 reflects certainty of extraction and categorization.
+10) **All generated text in the JSON values MUST be in the language of the TRANSCRIPT.**
+11) For each item in the "tasks" array, provide a single emoji that best represents the task in the new "emoji" field.
 
 TRANSCRIPT: "${transcript.replaceAll('"', '\\"')}"
 ''';

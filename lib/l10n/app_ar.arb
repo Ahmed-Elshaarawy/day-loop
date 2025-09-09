@@ -29,5 +29,42 @@
     "languageEnglish": "الإنجليزية",
     "languageArabic": "العربية",
     "cancelButton": "إلغاء",
-    "continueWithGoogle": "المتابعة باستخدام جوجل"
+    "continueWithGoogle": "المتابعة باستخدام جوجل",
+    "emptyStateTitle": "رحلتك تبدأ هنا!",
+    "emptyStateSubtitle": "انقر على الميكروفون أدناه وابدأ التحدث لإضافة أول مهمة لك.",
+    "errorLoadingHistory": "فشل في تحميل السجل",
+    "errorLoadingDay": "فشل في تحميل مهام هذا اليوم",
+    "emptyHistoryTitle": "لا يوجد سجل بعد.",
+    "emptyHistorySubtitle": "استخدم زر الميكروفون في الصفحة الرئيسية لإضافة مهام اليوم.",
+    "authRequiredHistory": "الرجاء تسجيل الدخول لعرض السجل.",
+    "emptyDayTitle": "لا توجد مهام مسجلة لهذا اليوم.",
+    "authRequiredDay": "الرجاء تسجيل الدخول لعرض مهام هذا اليوم.",
+    "clearHistoryTitle": "مسح السجل",
+    "clearHistorySubtitle": "حذف جميع المهام المحفوظة لهذا الحساب",
+    "clearHistoryDialogTitle": "مسح السجل؟",
+    "clearHistoryDialogContent": "سيؤدي هذا إلى حذف جميع مهامك وسجلك نهائيًا لهذا الحساب على هذا الجهاز. لا يمكن التراجع عن هذا الإجراء.",
+    "deleteButton": "حذف",
+    "toastSignInRequired": "يجب تسجيل الدخول.",
+    "toastHistoryCleared": "تم مسح السجل.",
+    "toastHistoryClearFailed": "فشل في مسح السجل: {error}",
+      "todayWithDate": "اليوم — {date}",
+      "@todayWithDate": {
+        "description": "يُعرض كعنوان البطاقة عندما يكون اليوم هو اليوم الحالي",
+        "placeholders": { "date": { "type": "String" } }
+      },
+      "viewAllCount": "عرض الكل {count}",
+      "@viewAllCount": {
+        "description": "نص الزر لعرض إجمالي عدد المهام في اليوم",
+        "placeholders": { "count": { "type": "int" } }
+      },
+      "untitledTask": "(مهمة بلا عنوان)",
+      "authInvalidEmail": "تنسيق البريد الإلكتروني غير صحيح.",
+      "authUserDisabled": "تم تعطيل هذا الحساب.",
+      "authInvalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      "authEmailInUse": "يوجد حساب بالفعل بهذا البريد الإلكتروني.",
+      "authWeakPassword": "كلمة المرور ضعيفة.",
+      "authPopupClosed": "تم إغلاق نافذة تسجيل الدخول قبل الإكمال.",
+      "authAborted": "تم إلغاء تسجيل الدخول من قبل المستخدم.",
+      "authGoogleSignInError": "فشل تسجيل الدخول عبر جوجل.",
+      "authGenericFailure": "فشل التحقق. حاول مرة أخرى."
 }

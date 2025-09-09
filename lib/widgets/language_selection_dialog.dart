@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:day_loop/services/language_service.dart';
-import 'package:day_loop/l10n/app_localizations.dart';
+
+import '../l10n/app_localizations.dart';
 
 class LanguageSelectionDialog extends StatelessWidget {
   const LanguageSelectionDialog({super.key});

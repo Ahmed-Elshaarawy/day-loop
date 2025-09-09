@@ -29,5 +29,42 @@
     "languageEnglish": "English",
     "languageArabic": "Arabic",
     "cancelButton": "Cancel",
-    "continueWithGoogle": "Continue with Google"
+    "continueWithGoogle": "Continue with Google",
+    "emptyStateTitle": "Your journey starts here!",
+    "emptyStateSubtitle": "Tap the microphone below and start talking to add your first task.",
+    "errorLoadingHistory": "Failed to load history",
+    "errorLoadingDay": "Failed to load tasks for this day",
+    "emptyHistoryTitle": "No history yet.",
+    "emptyHistorySubtitle": "Use the mic button in the home page to add today’s tasks.",
+    "authRequiredHistory": "Please sign in to view your history.",
+    "emptyDayTitle": "Nothing was logged for this day.",
+    "authRequiredDay": "Please sign in to view this day.",
+    "clearHistoryTitle": "Clear history",
+    "clearHistorySubtitle": "Delete all saved tasks for this account",
+    "clearHistoryDialogTitle": "Clear history?",
+    "clearHistoryDialogContent": "This will permanently delete all your tasks and history for this account on this device. This action cannot be undone.",
+    "deleteButton": "Delete",
+    "toastSignInRequired": "You need to be signed in.",
+    "toastHistoryCleared": "History cleared.",
+    "toastHistoryClearFailed": "Failed to clear history: {error}",
+    "todayWithDate": "Today — {date}",
+    "@todayWithDate": {
+      "description": "Shown as the card title when the day is today",
+      "placeholders": { "date": { "type": "String" } }
+    },
+    "viewAllCount": "View all {count}",
+    "@viewAllCount": {
+      "description": "Button text to show the total number of tasks in the day",
+      "placeholders": { "count": { "type": "int" } }
+    },
+    "untitledTask": "(Untitled task)",
+    "authInvalidEmail": "The email address is badly formatted.",
+    "authUserDisabled": "This account has been disabled.",
+    "authInvalidCredentials": "Invalid email or password.",
+    "authEmailInUse": "An account already exists with this email.",
+    "authWeakPassword": "That password is too weak.",
+    "authPopupClosed": "The sign-in popup was closed before completing.",
+    "authAborted": "Sign-in aborted by user.",
+    "authGoogleSignInError": "Google sign-in failed.",
+    "authGenericFailure": "Authentication failed. Please try again."
 }
