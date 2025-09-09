@@ -97,4 +97,101 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get continueWithGoogle => 'المتابعة باستخدام جوجل';
+
+  @override
+  String get emptyStateTitle => 'رحلتك تبدأ هنا!';
+
+  @override
+  String get emptyStateSubtitle =>
+      'انقر على الميكروفون أدناه وابدأ التحدث لإضافة أول مهمة لك.';
+
+  @override
+  String get errorLoadingHistory => 'فشل في تحميل السجل';
+
+  @override
+  String get errorLoadingDay => 'فشل في تحميل مهام هذا اليوم';
+
+  @override
+  String get emptyHistoryTitle => 'لا يوجد سجل بعد.';
+
+  @override
+  String get emptyHistorySubtitle =>
+      'استخدم زر الميكروفون في الصفحة الرئيسية لإضافة مهام اليوم.';
+
+  @override
+  String get authRequiredHistory => 'الرجاء تسجيل الدخول لعرض السجل.';
+
+  @override
+  String get emptyDayTitle => 'لا توجد مهام مسجلة لهذا اليوم.';
+
+  @override
+  String get authRequiredDay => 'الرجاء تسجيل الدخول لعرض مهام هذا اليوم.';
+
+  @override
+  String get clearHistoryTitle => 'مسح السجل';
+
+  @override
+  String get clearHistorySubtitle => 'حذف جميع المهام المحفوظة لهذا الحساب';
+
+  @override
+  String get clearHistoryDialogTitle => 'مسح السجل؟';
+
+  @override
+  String get clearHistoryDialogContent =>
+      'سيؤدي هذا إلى حذف جميع مهامك وسجلك نهائيًا لهذا الحساب على هذا الجهاز. لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get deleteButton => 'حذف';
+
+  @override
+  String get toastSignInRequired => 'يجب تسجيل الدخول.';
+
+  @override
+  String get toastHistoryCleared => 'تم مسح السجل.';
+
+  @override
+  String toastHistoryClearFailed(Object error) {
+    return 'فشل في مسح السجل: $error';
+  }
+
+  @override
+  String todayWithDate(String date) {
+    return 'اليوم — $date';
+  }
+
+  @override
+  String viewAllCount(int count) {
+    return 'عرض الكل $count';
+  }
+
+  @override
+  String get untitledTask => '(مهمة بلا عنوان)';
+
+  @override
+  String get authInvalidEmail => 'تنسيق البريد الإلكتروني غير صحيح.';
+
+  @override
+  String get authUserDisabled => 'تم تعطيل هذا الحساب.';
+
+  @override
+  String get authInvalidCredentials =>
+      'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+
+  @override
+  String get authEmailInUse => 'يوجد حساب بالفعل بهذا البريد الإلكتروني.';
+
+  @override
+  String get authWeakPassword => 'كلمة المرور ضعيفة.';
+
+  @override
+  String get authPopupClosed => 'تم إغلاق نافذة تسجيل الدخول قبل الإكمال.';
+
+  @override
+  String get authAborted => 'تم إلغاء تسجيل الدخول من قبل المستخدم.';
+
+  @override
+  String get authGoogleSignInError => 'فشل تسجيل الدخول عبر جوجل.';
+
+  @override
+  String get authGenericFailure => 'فشل التحقق. حاول مرة أخرى.';
 }

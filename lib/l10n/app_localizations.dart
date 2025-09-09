@@ -277,6 +277,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue with Google'**
   String get continueWithGoogle;
+
+  /// No description provided for @emptyStateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your journey starts here!'**
+  String get emptyStateTitle;
+
+  /// No description provided for @emptyStateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the microphone below and start talking to add your first task.'**
+  String get emptyStateSubtitle;
+
+  /// No description provided for @errorLoadingHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load history'**
+  String get errorLoadingHistory;
+
+  /// No description provided for @errorLoadingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load tasks for this day'**
+  String get errorLoadingDay;
+
+  /// No description provided for @emptyHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No history yet.'**
+  String get emptyHistoryTitle;
+
+  /// No description provided for @emptyHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the mic button in the home page to add today’s tasks.'**
+  String get emptyHistorySubtitle;
+
+  /// No description provided for @authRequiredHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in to view your history.'**
+  String get authRequiredHistory;
+
+  /// No description provided for @emptyDayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was logged for this day.'**
+  String get emptyDayTitle;
+
+  /// No description provided for @authRequiredDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in to view this day.'**
+  String get authRequiredDay;
+
+  /// No description provided for @clearHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear history'**
+  String get clearHistoryTitle;
+
+  /// No description provided for @clearHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all saved tasks for this account'**
+  String get clearHistorySubtitle;
+
+  /// No description provided for @clearHistoryDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear history?'**
+  String get clearHistoryDialogTitle;
+
+  /// No description provided for @clearHistoryDialogContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete all your tasks and history for this account on this device. This action cannot be undone.'**
+  String get clearHistoryDialogContent;
+
+  /// No description provided for @deleteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteButton;
+
+  /// No description provided for @toastSignInRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'You need to be signed in.'**
+  String get toastSignInRequired;
+
+  /// No description provided for @toastHistoryCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'History cleared.'**
+  String get toastHistoryCleared;
+
+  /// No description provided for @toastHistoryClearFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to clear history: {error}'**
+  String toastHistoryClearFailed(Object error);
+
+  /// Shown as the card title when the day is today
+  ///
+  /// In en, this message translates to:
+  /// **'Today — {date}'**
+  String todayWithDate(String date);
+
+  /// Button text to show the total number of tasks in the day
+  ///
+  /// In en, this message translates to:
+  /// **'View all {count}'**
+  String viewAllCount(int count);
+
+  /// No description provided for @untitledTask.
+  ///
+  /// In en, this message translates to:
+  /// **'(Untitled task)'**
+  String get untitledTask;
+
+  /// No description provided for @authInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'The email address is badly formatted.'**
+  String get authInvalidEmail;
+
+  /// No description provided for @authUserDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been disabled.'**
+  String get authUserDisabled;
+
+  /// No description provided for @authInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password.'**
+  String get authInvalidCredentials;
+
+  /// No description provided for @authEmailInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists with this email.'**
+  String get authEmailInUse;
+
+  /// No description provided for @authWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'That password is too weak.'**
+  String get authWeakPassword;
+
+  /// No description provided for @authPopupClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'The sign-in popup was closed before completing.'**
+  String get authPopupClosed;
+
+  /// No description provided for @authAborted.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in aborted by user.'**
+  String get authAborted;
+
+  /// No description provided for @authGoogleSignInError.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed.'**
+  String get authGoogleSignInError;
+
+  /// No description provided for @authGenericFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed. Please try again.'**
+  String get authGenericFailure;
 }
 
 class _AppLocalizationsDelegate

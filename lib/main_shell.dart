@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import 'l10n/app_localizations.dart';
 
 class MainShell extends StatelessWidget {
@@ -50,9 +51,9 @@ class MainShell extends StatelessWidget {
   }
 
   void _onTap(BuildContext context, int index) {
-    navigationShell.goBranch(
-      index,
-      initialLocation: index == navigationShell.currentIndex,
-    );
-  }
-}
+    if (index == 1) {
+      context.go('/history', extra: {'clearStack': true});
+    } else {
+      navigationShell.goBranch(index);
+    }
+  }}

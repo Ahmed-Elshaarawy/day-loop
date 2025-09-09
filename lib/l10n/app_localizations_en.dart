@@ -97,4 +97,101 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get emptyStateTitle => 'Your journey starts here!';
+
+  @override
+  String get emptyStateSubtitle =>
+      'Tap the microphone below and start talking to add your first task.';
+
+  @override
+  String get errorLoadingHistory => 'Failed to load history';
+
+  @override
+  String get errorLoadingDay => 'Failed to load tasks for this day';
+
+  @override
+  String get emptyHistoryTitle => 'No history yet.';
+
+  @override
+  String get emptyHistorySubtitle =>
+      'Use the mic button in the home page to add today’s tasks.';
+
+  @override
+  String get authRequiredHistory => 'Please sign in to view your history.';
+
+  @override
+  String get emptyDayTitle => 'Nothing was logged for this day.';
+
+  @override
+  String get authRequiredDay => 'Please sign in to view this day.';
+
+  @override
+  String get clearHistoryTitle => 'Clear history';
+
+  @override
+  String get clearHistorySubtitle => 'Delete all saved tasks for this account';
+
+  @override
+  String get clearHistoryDialogTitle => 'Clear history?';
+
+  @override
+  String get clearHistoryDialogContent =>
+      'This will permanently delete all your tasks and history for this account on this device. This action cannot be undone.';
+
+  @override
+  String get deleteButton => 'Delete';
+
+  @override
+  String get toastSignInRequired => 'You need to be signed in.';
+
+  @override
+  String get toastHistoryCleared => 'History cleared.';
+
+  @override
+  String toastHistoryClearFailed(Object error) {
+    return 'Failed to clear history: $error';
+  }
+
+  @override
+  String todayWithDate(String date) {
+    return 'Today — $date';
+  }
+
+  @override
+  String viewAllCount(int count) {
+    return 'View all $count';
+  }
+
+  @override
+  String get untitledTask => '(Untitled task)';
+
+  @override
+  String get authInvalidEmail => 'The email address is badly formatted.';
+
+  @override
+  String get authUserDisabled => 'This account has been disabled.';
+
+  @override
+  String get authInvalidCredentials => 'Invalid email or password.';
+
+  @override
+  String get authEmailInUse => 'An account already exists with this email.';
+
+  @override
+  String get authWeakPassword => 'That password is too weak.';
+
+  @override
+  String get authPopupClosed =>
+      'The sign-in popup was closed before completing.';
+
+  @override
+  String get authAborted => 'Sign-in aborted by user.';
+
+  @override
+  String get authGoogleSignInError => 'Google sign-in failed.';
+
+  @override
+  String get authGenericFailure => 'Authentication failed. Please try again.';
 }
