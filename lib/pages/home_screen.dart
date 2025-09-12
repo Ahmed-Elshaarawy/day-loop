@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../ai/day_loop_service.dart';
+import '../controllers/journey_controller.dart';
 import '../services/language_service.dart';
 
 import '../controllers/speech_controller.dart';
@@ -11,6 +12,7 @@ import '../widgets/record_button.dart';
 import '../widgets/journey_card.dart';
 import '../repositories/task_repository.dart';
 import '../view_models/home_view_model.dart';
+// Note: no JourneyState import needed; JourneyCard reads JourneyController internally.
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,6 +20,7 @@ class HomeScreen extends StatelessWidget {
   String _timeOfDayLabel(AppLocalizations l10n) {
     final h = DateTime.now().hour;
     return (h < 12) ? l10n.morning : l10n.evening;
+    // If you want a 3-part label (morning/afternoon/evening), adjust here.
   }
 
   @override
@@ -29,15 +32,16 @@ class HomeScreen extends StatelessWidget {
     final dayLoopSvc = DayLoopService(dotenv.env['API_KEY']!);
 
     return ChangeNotifierProvider<HomeViewModel>(
-      create: (_) => HomeViewModel(
+      create: (ctx) => HomeViewModel(
         dayLoopService: dayLoopSvc,
         languageService: langSvc,
         taskRepository: repo,
-      )..init(), // kick off init & hydration
+        journeyController: ctx.read<JourneyController>(),
+      )..init(), // kick off init & hydration (non-JourneyCard concerns)
       builder: (context, _) {
         final vm = context.watch<HomeViewModel>();
 
-        // Expose the SpeechController to children that already depend on it
+        // Expose the SpeechController to children that depend on it
         return ChangeNotifierProvider<SpeechController>.value(
           value: vm.controller,
           child: Scaffold(
@@ -67,10 +71,12 @@ class HomeScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         children: [
+                          // JourneyCard is a dumb view that subscribes to JourneyController.
                           SizedBox(
                             height: 400,
                             child: JourneyCard(
-                              title: '${l10n.todayJourney} - ${_timeOfDayLabel(l10n)}',
+                              title:
+                              '${l10n.todayJourney} - ${_timeOfDayLabel(l10n)}',
                               todayDateLabel: l10n.todayDate,
                               dayStreakLabel: l10n.dayStreak,
                             ),

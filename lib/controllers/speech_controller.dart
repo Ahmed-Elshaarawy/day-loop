@@ -6,9 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:day_loop/ai/day_loop_service.dart';
 import 'package:day_loop/services/language_service.dart';
 
-import '../journey_state.dart';
 import '../repositories/task_repository.dart';
 import '../task.dart';
+import 'journey_controller.dart';
 
 class SpeechController extends ChangeNotifier {
   SpeechController({
@@ -16,22 +16,37 @@ class SpeechController extends ChangeNotifier {
     required DayLoopService dayLoop,
     required LanguageService languageService,
     required TaskRepository taskRepository,
+    required JourneyController journeyController,
   })  : _speech = speech,
         _dayLoop = dayLoop,
         _languageService = languageService,
-        _repo = taskRepository;
+        _repo = taskRepository,
+        _journey = journeyController;
 
   final SpeechToText _speech;
   final DayLoopService _dayLoop;
   final LanguageService _languageService;
   final TaskRepository _repo;
+  final JourneyController _journey;
 
   bool _speechReady = false;
   bool get speechReady => _speechReady;
   bool get isListening => _speech.isListening;
 
   String _lastWords = '';
+
+  /// Flag that becomes true while transcript is being parsed (Gemini call).
   bool _isProcessingTranscript = false;
+  bool get processing => _isProcessingTranscript;
+
+  /// Expose one unified flag for UI spinners.
+  bool get busy => processing; // or: processing || isListening if you want mic time too
+
+  void _setProcessing(bool v) {
+    if (_isProcessingTranscript == v) return;
+    _isProcessingTranscript = v;
+    notifyListeners();
+  }
 
   Future<void> init() async {
     _speechReady = await _speech.initialize(onStatus: _onStatus);
@@ -40,7 +55,7 @@ class SpeechController extends ChangeNotifier {
 
   Future<void> startListening() async {
     _lastWords = '';
-    _isProcessingTranscript = false;
+    _setProcessing(false);
 
     final localeId = _localeFor(_languageService.currentLanguage);
 
@@ -83,20 +98,16 @@ class SpeechController extends ChangeNotifier {
 
   Future<void> _processTranscript() async {
     if (_isProcessingTranscript) return;
-    _isProcessingTranscript = true;
+    _setProcessing(true); // 🔹 show spinner now
 
     final transcript = _lastWords.trim();
     if (transcript.isEmpty) {
-      _isProcessingTranscript = false;
+      _setProcessing(false);
       return;
     }
 
     final mode = DateTime.now().hour < 12 ? 'morning_brief' : 'evening_debrief';
     final locale = _localeFor(_languageService.currentLanguage);
-
-    final j = JourneyState.instance;
-    j.loading.value = true;
-    j.error.value = null;
 
     try {
       final parsed = await _dayLoop.parseTranscript(
@@ -106,45 +117,17 @@ class SpeechController extends ChangeNotifier {
       );
       debugPrint('DL> Gemini parsed JSON: $parsed');
 
-      // ---- 1) Update on-screen Journey card state (merge) ----
-      final currentData = j.data.value;
-      if (currentData != null) {
-        final Map<String, dynamic> combinedData = Map.from(currentData);
-        parsed.forEach((key, value) {
-          if (combinedData.containsKey(key)) {
-            if (combinedData[key] is List) {
-              final existingList = List.from(combinedData[key]);
-              final newList = List.from(value);
-              existingList.addAll(newList);
-              combinedData[key] = existingList;
-            } else {
-              combinedData[key] = value;
-            }
-          } else {
-            combinedData[key] = value;
-          }
-        });
-        j.data.value = combinedData;
-      } else {
-        j.data.value = parsed;
-      }
-
-      // ---- 2) Persist parsed tasks for History ----
       await _persistTasks(parsed);
-
-      // (Optional) you could refresh today's tasks from DB here to attach taskIds,
-      // but JourneyCard already handles missing ids gracefully via repo lookup.
-
+      await _autoCompleteAgainstCurrentTasks(parsed);
+      await _journey.fetchFromDb();
     } catch (e, st) {
       debugPrint('DL> Gemini error: $e\n$st');
-      j.error.value = e is FormatException
-          ? 'Could not process your recording. Please try again.'
-          : 'Something went wrong. Please try again.';
     } finally {
-      j.loading.value = false;
-      _isProcessingTranscript = false;
+      _setProcessing(false); // 🔹 hide spinner
     }
   }
+
+  // -------------------- Persistence --------------------
 
   Future<void> _persistTasks(Map<String, dynamic> parsed) async {
     final user = FirebaseAuth.instance.currentUser;
@@ -189,64 +172,134 @@ class SpeechController extends ChangeNotifier {
     }
   }
 
-  /// Faster hydration: pulls **only today's** tasks from DB and includes taskId.
-  Future<void> hydrateTodayFromDb() async {
+  // -------------------- Auto-complete (simplified) --------------------
+
+  Future<void> _autoCompleteAgainstCurrentTasks(Map<String, dynamic> parsed) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    // Efficient SQL-side day filter (UTC conversion is inside the repo helper)
-    final todays = await _repo.getTasksForToday(
-      userId: user.uid,
-      orderBy: 'createdAt ASC',
-    );
+    final open = _journey.tasks.where((t) => !t.completed).toList();
+    if (open.isEmpty) return;
 
-    if (todays.isEmpty) {
-      JourneyState.instance.data.value = null;
-      return;
+    final phrases = _extractCompletionSignals(parsed);
+    final doneEntries = _extractDoneEntries(parsed);
+
+    if (phrases.isEmpty && doneEntries.isEmpty) return;
+
+    Set<String> tokens(String s) {
+      s = s.toLowerCase();
+      s = s.replaceAll(RegExp(r'[^a-z0-9\u0600-\u06FF\s]'), ' ');
+      final stop = {'a','an','the','to','for','of','on','in','at','with','and','or','it','my','our','your','their','then'};
+      return s.split(RegExp(r'\s+')).where((w) => w.isNotEmpty && !stop.contains(w)).toSet();
     }
 
-    final list = todays.map((Task t) {
-      final title = t.title.trim();
-      final emoji = _leadingEmoji(title) ?? '';
-      final text  = _withoutLeadingEmoji(title);
-      return {
-        'emoji': emoji,
-        'text' : text,
-        'completed': t.status == 'done',
-        'taskId': t.id,                 // 👈 include DB id for instant persistence
-      };
-    }).toList();
+    double jaccard(Set<String> a, Set<String> b) {
+      if (a.isEmpty || b.isEmpty) return 0.0;
+      final inter = a.intersection(b).length;
+      return inter / a.union(b).length;
+    }
 
-    JourneyState.instance.data.value = {'tasks': list};
+    bool fuzzyMatches(String a, String b) {
+      final sa = tokens(a);
+      final sb = tokens(b);
+      final jac = jaccard(sa, sb);
+      if (jac >= 0.6) return true;
+      final inter = sa.intersection(sb).length;
+      return inter / sa.length >= 0.6 || inter / sb.length >= 0.6;
+    }
+
+    for (final t in open) {
+      final title = t.title;
+      final titleTokens = tokens(title);
+      double best = 0.0;
+
+      for (final e in doneEntries) {
+        final lemmas = (e['lemmas'] as List).cast<String>();
+        if (lemmas.isNotEmpty) {
+          final overlap = jaccard(titleTokens, lemmas.map((w) => w.toLowerCase()).toSet());
+          if (overlap > best) best = overlap;
+        }
+        final items = (e['items'] as List).cast<String>();
+        final places = (e['places'] as List).cast<String>();
+        if (items.any((it) => title.toLowerCase().contains(it.toLowerCase())) ||
+            places.any((pl) => title.toLowerCase().contains(pl.toLowerCase()))) {
+          if (best < 0.6) best = 0.6;
+        }
+        final eText = (e['text'] ?? '').toString();
+        if (fuzzyMatches(eText, title) && best < 0.6) {
+          best = 0.6;
+        }
+      }
+
+      for (final p in phrases) {
+        if (fuzzyMatches(p, title) && best < 0.6) best = 0.6;
+      }
+
+      if (best >= 0.75 || (best >= 0.6 && title.length <= 64)) {
+        final row = await _repo.findLatestByTitle(userId: user.uid, title: title.trim());
+        final id = row?.id ?? t.id;
+        if (id != null) {
+          await _repo.setTaskDone(id, true);
+        }
+      }
+    }
   }
 
-  // ---- emoji helpers (same logic you used elsewhere) ----
-  String? _leadingEmoji(String s) {
-    final it = s.trimLeft().runes.iterator;
-    if (!it.moveNext()) return null;
-    final r = it.current;
-    final isEmoji = (r >= 0x1F300 && r <= 0x1FAFF) ||
-        (r >= 0x1F900 && r <= 0x1F9FF) ||
-        (r >= 0x2600 && r <= 0x26FF) ||
-        (r >= 0x2700 && r <= 0x27BF);
-    return isEmoji ? String.fromCharCode(r) : null;
+  // ---- helpers ----
+
+  List<String> _extractCompletionSignals(Map<String, dynamic> data) {
+    final out = <String>[];
+
+    final tasks = (data['tasks'] as List?)?.whereType<Map>() ?? const [];
+    for (final t in tasks) {
+      if (t['completed'] == true) {
+        final text = (t['text'] ?? '').toString().trim();
+        if (text.isNotEmpty) out.add(text);
+      }
+    }
+
+    final entries = (data['entries'] as List?)?.whereType<Map>() ?? const [];
+    final doneRegex = RegExp(r'\b(done|finished|completed|checked\s*off)\b', caseSensitive: false);
+
+    bool looksPastTense(String s) {
+      final lower = s.toLowerCase();
+      if (doneRegex.hasMatch(lower)) return true;
+      for (final w in lower.split(RegExp(r'\s+'))) {
+        if (w.length > 3 && w.endsWith('ed')) return true;
+      }
+      return false;
+    }
+
+    for (final e in entries) {
+      final status = (e['status'] ?? '').toString().toLowerCase();
+      final text = (e['text'] ?? '').toString().trim();
+      if (text.isEmpty) continue;
+      if (status == 'done' || looksPastTense(text)) out.add(text);
+    }
+
+    final phrases = (data['completed_phrases'] as List?)?.whereType<String>() ?? const [];
+    out.addAll(phrases.map((s) => s.trim()).where((s) => s.isNotEmpty));
+
+    return out.toSet().toList();
   }
 
-  String _withoutLeadingEmoji(String s) {
-    final trimmed = s.trimLeft();
-    if (trimmed.isEmpty) return s;
-    final it = trimmed.runes.iterator;
-    if (!it.moveNext()) return s;
-    final r = it.current;
-    final isEmoji = (r >= 0x1F300 && r <= 0x1FAFF) ||
-        (r >= 0x1F900 && r <= 0x1F9FF) ||
-        (r >= 0x2600 && r <= 0x26FF) ||
-        (r >= 0x2700 && r <= 0x27BF);
-    if (!isEmoji) return s;
-    final emoji = String.fromCharCode(r);
-    return trimmed.startsWith(emoji)
-        ? trimmed.substring(emoji.length).trimLeft()
-        : s;
+  List<Map<String, dynamic>> _extractDoneEntries(Map<String, dynamic> data) {
+    final out = <Map<String, dynamic>>[];
+    final entries = (data['entries'] as List?)?.whereType<Map>() ?? const [];
+
+    bool isDone(Map e) => ((e['status'] ?? '').toString().toLowerCase() == 'done');
+
+    for (final e in entries) {
+      if (!isDone(e)) continue;
+      final text = (e['text'] ?? '').toString().trim();
+      if (text.isEmpty) continue;
+      final lemmas = (e['lemmas'] as List?)?.whereType<String>().toList() ?? const <String>[];
+      final entities = (e['entities'] as Map?) ?? const {};
+      final items = (entities['items'] as List?)?.whereType<String>().toList() ?? const <String>[];
+      final places = (entities['places'] as List?)?.whereType<String>().toList() ?? const <String>[];
+      out.add({'text': text, 'lemmas': lemmas, 'items': items, 'places': places});
+    }
+    return out;
   }
 
   String _localeFor(String language) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../controllers/journey_controller.dart';
 import '../widgets/language_selection_dialog.dart';
 import '../auth/auth_service.dart';
 import '../l10n/app_localizations.dart';
@@ -36,7 +37,7 @@ class SettingsScreen extends StatelessWidget {
       body: uid == null
           ? Center(child: Text(l10n.toastSignInRequired))
           : ChangeNotifierProvider(
-        create: (_) => SettingsViewModel(repo: repo, userId: uid),
+        create: (ctx) => SettingsViewModel(repo: repo, userId: uid, journeyController: ctx.read<JourneyController>()),
         child: const _SettingsBody(),
       ),
     );
