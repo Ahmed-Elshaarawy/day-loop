@@ -14,6 +14,7 @@ import 'services/language_service.dart';
 import 'app_router.dart';
 
 import 'repositories/task_repository.dart';
+import 'controllers/journey_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,9 +33,14 @@ Future<void> main() async {
         ChangeNotifierProvider<LanguageService>(
           create: (_) => LanguageService(),
         ),
-        // ⬅️ Important: use ChangeNotifierProvider so HistoryScreen rebuilds
+        // Repository lives at the root so everyone can read it.
         ChangeNotifierProvider<TaskRepository>(
           create: (_) => TaskRepository(),
+        ),
+        // NEW: controller that powers JourneyCard (hydrated from DB on start)
+        ChangeNotifierProvider<JourneyController>(
+          create: (ctx) =>
+          JourneyController(ctx.read<TaskRepository>())..fetchFromDb(),
         ),
       ],
       child: const DayLoopApp(),
